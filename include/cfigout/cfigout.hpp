@@ -86,13 +86,33 @@ public:
 	}
 
 	inline cfigout& print() {
+		std::printf("LEGEND:\n");
+		for (const auto& dp : data_points_list) {
+			std::printf("- \'%c\': %s\n", dp.marker, dp.label_name.c_str());
+		}
+
+		int max_ylabel_lenght = 10;
+
+		for (unsigned i = 0; i < max_ylabel_lenght + 1; i++) {
+			std::printf(" ");
+		}
 		std::printf("+");
 		for (unsigned i = 0; i < width; i++) {
 			std::printf("-");
 		}
 		std::printf("+\n");
+
 		for (int h = height - 1; h >= 0; h--) {
-			std::printf("|%s|\n", fig.get() + h * (width + 1));
+			std::string ylable = "";
+			std::printf("%*s |%s|\n",
+					max_ylabel_lenght,
+					ylable.c_str(),
+					fig.get() + h * (width + 1));
+		}
+
+		//
+		for (unsigned i = 0; i < max_ylabel_lenght + 1; i++) {
+			std::printf(" ");
 		}
 		std::printf("+");
 		for (unsigned i = 0; i < width; i++) {
