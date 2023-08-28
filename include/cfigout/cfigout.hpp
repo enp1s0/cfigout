@@ -26,23 +26,23 @@ class cfigout {
 	std::unique_ptr<char[]> fig;
 
 	const unsigned width, height;
-	T xmin, xmax;
-	T ymin, ymax;
+	T xmin = 0, xmax = 0;
+	T ymin = 0, ymax = 0;
 
 	T xmin_set = 0, xmax_set = 0;
 	T ymin_set = 0, ymax_set = 0;
 
-	inline void set_char(const int x, const int y, const char c) {
+	inline void set_char(const unsigned x, const unsigned y, const char c) {
 		if (x >= width || y >= height) return;
 
 		fig.get()[x + y * (width + 1)] = c;
 	}
 
-	inline void set_char_force(const int x, const int y, const char c) {
+	inline void set_char_force(const unsigned x, const unsigned y, const char c) {
 		fig.get()[x + y * (width + 1)] = c;
 	}
 
-	inline char get_char(const int x, const int y) const {
+	inline char get_char(const unsigned x, const unsigned y) const {
 		if (x >= width || y >= height) return ' ';
 
 		return fig.get()[x + y * (width + 1)];
@@ -91,7 +91,7 @@ public:
 			std::printf("- \'%c\': %s\n", dp.marker, dp.label_name.c_str());
 		}
 
-		int max_ylabel_lenght = 10;
+		unsigned max_ylabel_lenght = 10;
 
 		for (unsigned i = 0; i < max_ylabel_lenght + 1; i++) {
 			std::printf(" ");
