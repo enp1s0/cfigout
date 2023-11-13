@@ -3,6 +3,7 @@
 #include <vector>
 #include <climits>
 #include <cfloat>
+#include <cassert>
 
 namespace mtk {
 namespace cfigout {
@@ -23,134 +24,149 @@ template <> inline long   min_value<long  >() {return LONG_MIN;}
 
 template <class T = int>
 class cfigout {
-	std::unique_ptr<char[]> fig;
+  std::unique_ptr<char[]> fig;
 
-	const unsigned width, height;
-	T xmin = 0, xmax = 0;
-	T ymin = 0, ymax = 0;
+  const unsigned width, height;
+  T xmax, xmin;
+  T ymax, ymin;
 
-	T xmin_set = 0, xmax_set = 0;
-	T ymin_set = 0, ymax_set = 0;
+  T xmin_set = 0, xmax_set = 0;
+  T ymin_set = 0, ymax_set = 0;
 
-	inline void set_char(const unsigned x, const unsigned y, const char c) {
-		if (x >= width || y >= height) return;
+  inline void set_char(const unsigned x, const unsigned y, const char c) {
+    if (x >= width || y >= height) return;
 
-		fig.get()[x + y * (width + 1)] = c;
-	}
+    fig.get()[x + y * (width + 1)] = c;
+  }
 
-	inline void set_char_force(const unsigned x, const unsigned y, const char c) {
-		fig.get()[x + y * (width + 1)] = c;
-	}
+  inline void set_char_force(const unsigned x, const unsigned y, const char c) {
+    fig.get()[x + y * (width + 1)] = c;
+  }
 
-	inline char get_char(const unsigned x, const unsigned y) const {
-		if (x >= width || y >= height) return ' ';
+  inline char get_char(const unsigned x, const unsigned y) const {
+    if (x >= width || y >= height) return ' ';
 
-		return fig.get()[x + y * (width + 1)];
-	}
+    return fig.get()[x + y * (width + 1)];
+  }
 
-	struct data_points {
-		char marker;
-		std::vector<std::pair<T, T>> points;
-		std::string label_name;
-	};
-	std::vector<data_points> data_points_list;
-public:
-	cfigout() : cfigout(80, 30) {}
-	cfigout(const unsigned w, const unsigned h)
-		: width(w), height(h), xmax(detail::min_value<T>()), xmin(detail::max_value<T>()),
-		ymax(detail::min_value<T>()), ymin(detail::max_value<T>()) {
-	};
+  struct data_points {
+    char marker;
+    std::vector<std::pair<T, T>> points;
+    std::string label_name;
+  };
+  std::vector<data_points> data_points_list;
+ public:
+  cfigout() : cfigout(80, 30) {}
+  cfigout(const unsigned w, const unsigned h)
+      : width(w), height(h), xmax(detail::min_value<T>()), xmin(detail::max_value<T>()),
+      ymax(detail::min_value<T>()), ymin(detail::max_value<T>()) {
+      };
 
-	inline cfigout& construct() {
-		// Memory allocation
-		fig = std::unique_ptr<char[]>(new char[(width + 1) * height]);
-		// Init
-		for (unsigned h = 0; h < height; h++) {
-			for (unsigned w = 0; w < width + 1; w++) {
-				if (w == width) {
-					set_char_force(w, h, '\0');
-				} else {
-					set_char(w, h, ' ');
-				}
-			}
-		}
+  inline cfigout& construct() {
+    // Memory allocation
+    fig = std::unique_ptr<char[]>(new char[(width + 1) * height]);
+    // Init
+    for (unsigned h = 0; h < height; h++) {
+      for (unsigned w = 0; w < width + 1; w++) {
+        if (w == width) {
+          set_char_force(w, h, '\0');
+        } else {
+          set_char(w, h, ' ');
+        }
+      }
+    }
 
-		for (const auto& dp : data_points_list) {
-			for (const auto p : dp.points) {
-				const auto x = static_cast<double>(p.first  - xmin) / (xmax - xmin) * (width  - 1);
-				const auto y = static_cast<double>(p.second - ymin) / (ymax - ymin) * (height - 1);
-				set_char(x, y, dp.marker);
-			}
-		}
-		return *this;
-	}
+    for (const auto& dp : data_points_list) {
+      for (const auto p : dp.points) {
+        const auto x = static_cast<double>(p.first  - xmin) / (xmax - xmin) * (width  - 1);
+        const auto y = static_cast<double>(p.second - ymin) / (ymax - ymin) * (height - 1);
+        set_char(x, y, dp.marker);
+      }
+    }
+    return *this;
+  }
 
-	inline cfigout& print() {
-		std::printf("LEGEND:\n");
-		for (const auto& dp : data_points_list) {
-			std::printf("- \'%c\': %s\n", dp.marker, dp.label_name.c_str());
-		}
+  inline cfigout& print() {
+    std::printf("LEGEND:\n");
+    for (const auto& dp : data_points_list) {
+      std::printf("- \'%c\': %s\n", dp.marker, dp.label_name.c_str());
+    }
 
-		unsigned max_ylabel_lenght = 10;
+    unsigned max_ylabel_lenght = 10;
 
-		for (unsigned i = 0; i < max_ylabel_lenght + 1; i++) {
-			std::printf(" ");
-		}
-		std::printf("+");
-		for (unsigned i = 0; i < width; i++) {
-			std::printf("-");
-		}
-		std::printf("+\n");
+    for (unsigned i = 0; i < max_ylabel_lenght + 1; i++) {
+      std::printf(" ");
+    }
+    std::printf("+");
+    for (unsigned i = 0; i < width; i++) {
+      std::printf("-");
+    }
+    std::printf("+\n");
 
-		for (int h = height - 1; h >= 0; h--) {
-			std::string ylable = "";
-			std::printf("%*s |%s|\n",
-					max_ylabel_lenght,
-					ylable.c_str(),
-					fig.get() + h * (width + 1));
-		}
+    for (int h = height - 1; h >= 0; h--) {
+      std::string ylable = "";
+      std::printf("%*s |%s|\n",
+                  max_ylabel_lenght,
+                  ylable.c_str(),
+                  fig.get() + h * (width + 1));
+    }
 
-		//
-		for (unsigned i = 0; i < max_ylabel_lenght + 1; i++) {
-			std::printf(" ");
-		}
-		std::printf("+");
-		for (unsigned i = 0; i < width; i++) {
-			std::printf("-");
-		}
-		std::printf("+\n");
+    //
+    for (unsigned i = 0; i < max_ylabel_lenght + 1; i++) {
+      std::printf(" ");
+    }
+    std::printf("+");
+    for (unsigned i = 0; i < width; i++) {
+      std::printf("-");
+    }
+    std::printf("+\n");
 
-		return *this;
-	}
+    return *this;
+  }
 
-	inline cfigout& set_xmin(const T v) {xmin = v; xmin_set = 1; return *this;}
-	inline cfigout& set_xmax(const T v) {xmax = v; xmax_set = 1; return *this;}
-	inline cfigout& set_ymin(const T v) {ymin = v; ymin_set = 1; return *this;}
-	inline cfigout& set_ymax(const T v) {ymax = v; ymax_set = 1; return *this;}
+  inline cfigout& set_xmin(const T v) {xmin = v; xmin_set = 1; return *this;}
+  inline cfigout& set_xmax(const T v) {xmax = v; xmax_set = 1; return *this;}
+  inline cfigout& set_ymin(const T v) {ymin = v; ymin_set = 1; return *this;}
+  inline cfigout& set_ymax(const T v) {ymax = v; ymax_set = 1; return *this;}
 
-	inline cfigout& add_data_points(
-			const char marker,
-			const std::vector<std::pair<T, T>> points,
-			const std::string label_name
-			) {
-		const data_points dp = {marker, points, label_name};
-		data_points_list.push_back(dp);
+  inline cfigout& add_data_points(
+      const char marker,
+      const std::vector<std::pair<T, T>> points,
+      const std::string label_name
+      ) {
+    const data_points dp = {marker, points, label_name};
+    data_points_list.push_back(dp);
 
-		T xmin_local = detail::max_value<T>(), xmax_local = detail::min_value<T>();
-		T ymin_local = detail::max_value<T>(), ymax_local = detail::min_value<T>();
-		for (const auto p : points) {
-			xmin_local = std::min(xmin_local, p.first );
-			xmax_local = std::max(xmax_local, p.first );
-			ymin_local = std::min(ymin_local, p.second);
-			ymax_local = std::max(ymax_local, p.second);
-		}
-		if (!xmin_set) xmin = std::min(xmin_local, xmin);
-		if (!xmax_set) xmax = std::max(xmax_local, xmax);
-		if (!ymin_set) ymin = std::min(ymin_local, ymin);
-		if (!ymax_set) ymax = std::max(ymax_local, ymax);
+    T xmin_local = detail::max_value<T>(), xmax_local = detail::min_value<T>();
+    T ymin_local = detail::max_value<T>(), ymax_local = detail::min_value<T>();
+    for (const auto p : points) {
+      xmin_local = std::min(xmin_local, p.first );
+      xmax_local = std::max(xmax_local, p.first );
+      ymin_local = std::min(ymin_local, p.second);
+      ymax_local = std::max(ymax_local, p.second);
+    }
+    if (!xmin_set) xmin = std::min(xmin_local, xmin);
+    if (!xmax_set) xmax = std::max(xmax_local, xmax);
+    if (!ymin_set) ymin = std::min(ymin_local, ymin);
+    if (!ymax_set) ymax = std::max(ymax_local, ymax);
 
-		return *this;
-	}
+    return *this;
+  }
+  inline cfigout& add_data_points(
+      const char marker,
+      const std::vector<T> x,
+      const std::vector<T> y,
+      const std::string label_name
+      ) {
+    assert(x.size() == y.size());
+
+    std::vector<std::pair<T, T>> points(x.size());
+    for (std::size_t i = 0; i < x.size(); i++) {
+      points[i] = std::make_pair(x[i], y[i]);
+    }
+
+    return add_data_points(marker, points, label_name);
+  }
 };
 } // namespace cfigout
 } // namespace mtk
