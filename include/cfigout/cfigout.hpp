@@ -131,7 +131,7 @@ class cfigout {
 
   inline cfigout& add_data_points(
       const char marker,
-      const std::vector<std::pair<T, T>> points,
+      const std::vector<std::pair<T, T>>& points,
       const std::string label_name
       ) {
     const data_points dp = {marker, points, label_name};
@@ -154,8 +154,8 @@ class cfigout {
   }
   inline cfigout& add_data_points(
       const char marker,
-      const std::vector<T> x,
-      const std::vector<T> y,
+      const std::vector<T>& x,
+      const std::vector<T>& y,
       const std::string label_name
       ) {
     assert(x.size() == y.size());
