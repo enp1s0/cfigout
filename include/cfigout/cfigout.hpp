@@ -77,7 +77,7 @@ class cfigout {
     }
 
     for (const auto& dp : data_points_list) {
-      for (const auto p : dp.points) {
+      for (const auto& p : dp.points) {
         const auto x = static_cast<double>(p.first  - xmin) / (xmax - xmin) * (width  - 1);
         const auto y = static_cast<double>(p.second - ymin) / (ymax - ymin) * (height - 1);
         set_char(x, y, dp.marker);
@@ -139,7 +139,7 @@ class cfigout {
 
     T xmin_local = detail::max_value<T>(), xmax_local = detail::min_value<T>();
     T ymin_local = detail::max_value<T>(), ymax_local = detail::min_value<T>();
-    for (const auto p : points) {
+    for (const auto& p : points) {
       xmin_local = std::min(xmin_local, p.first );
       xmax_local = std::max(xmax_local, p.first );
       ymin_local = std::min(ymin_local, p.second);
